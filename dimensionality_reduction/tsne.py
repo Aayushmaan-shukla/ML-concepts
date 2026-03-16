@@ -22,10 +22,6 @@ Key Parameters:
 - learning_rate: Step size for optimization (usually 10-1000)
 - n_iter: Number of iterations (usually 500-2000)
 
-Differences from PCA:
-- PCA: Linear, preserves global structure, fast, deterministic
-- t-SNE: Non-linear, preserves local structure, slow, stochastic
-
 Applications:
 - Data visualization
 - Cluster analysis
@@ -36,30 +32,12 @@ Applications:
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
-from sklearn.datasets import load_iris, load_digits, make_blobs
+from sklearn.datasets import load_digits
 from sklearn.preprocessing import StandardScaler
-import time
 
-# Load Iris dataset
-def load_iris_data():
-    """
-    Load the Iris dataset.
-    Returns:
-        X: Feature matrix
-        y: Target labels
-        target_names: Names of target classes
-    """
-    iris = load_iris()
-    X = iris.data
-    y = iris.target
-    target_names = iris.target_names
-
-    return X, y, target_names
-
-# Load Digits dataset
 def load_digits_data():
     """
-    Load the Digits dataset (handwritten digits).
+    Load Digits dataset (handwritten digits).
     Returns:
         X: Feature matrix
         y: Target labels
@@ -71,18 +49,6 @@ def load_digits_data():
     target_names = [f'Digit {i}' for i in range(10)]
 
     return X, y, target_names
-
-def generate_synthetic_clusters():
-    """
-    Generate synthetic high-dimensional clustered data.
-    Returns:
-        X: Feature matrix
-        y: Cluster labels
-    """
-    X, y = make_blobs(n_samples=500, centers=5, n_features=20,
-                      random_state=42, cluster_std=2.0)
-
-    return X, y
 
 def implement_tsne(X, n_components=2, perplexity=30, learning_rate=200,
                   n_iter=1000, random_state=42):
@@ -100,27 +66,20 @@ def implement_tsne(X, n_components=2, perplexity=30, learning_rate=200,
     Returns:
         tsne: Fitted t-SNE model
         X_transformed: Transformed data
-        time_elapsed: Time taken for computation
     """
     # Initialize t-SNE
     tsne = TSNE(n_components=n_components,
-               perplexity=perplexity,
-               learning_rate=learning_rate,
-               n_iter=n_iter,
-               random_state=random_state)
-
-    # Time the computation
-    start_time = time.time()
+                 perplexity=perplexity,
+                 learning_rate=learning_rate,
+                 n_iter=n_iter,
+                 random_state=random_state)
 
     # Fit and transform data
     X_transformed = tsne.fit_transform(X)
 
-    end_time = time.time()
-    time_elapsed = end_time - start_time
+    return tsne, X_transformed
 
-    return tsne, X_transformed, time_elapsed
-
-def plot_tsne_scatter(X_tsne, y, target_names, title="t-SNE Visualization"):
+def plot_tsne_visualization(X_tsne, y, target_names, title="t-SNE Visualization"):
     """
     Visualize t-SNE-transformed data in 2D.
 
@@ -130,91 +89,24 @@ def plot_tsne_scatter(X_tsne, y, target_names, title="t-SNE Visualization"):
         target_names: Names of target classes
         title: Plot title
     """
-    plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(12, 8))
 
     # Plot each class with different color
     unique_labels = np.unique(y)
     colors = plt.cm.tab10(np.linspace(0, 1, len(unique_labels)))
 
-    for i, label in enumerate(unique_labels):
+    for label in unique_labels:
         mask = y == label
         plt.scatter(X_tsne[mask, 0], X_tsne[mask, 1],
-                   c=[colors[i]], alpha=0.6,
+                   c=[colors[label]], alpha=0.6,
                    label=target_names[label] if label < len(target_names) else f'Class {label}',
                    s=50, edgecolors='black', linewidth=0.5)
 
-    plt.title(title, fontsize=14)
+    plt.title(title, fontsize=14, fontweight='bold')
     plt.xlabel('t-SNE Component 1', fontsize=12)
     plt.ylabel('t-SNE Component 2', fontsize=12)
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10)
     plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.show()
-
-def compare_perplexities(X, y, target_names, perplexities=[5, 30, 50]):
-    """
-    Compare t-SNE results with different perplexity values.
-
-    Parameters:
-        X: Feature matrix
-        y: Target labels
-        target_names: Names of target classes
-        perplexities: List of perplexity values to test
-    """
-    fig, axes = plt.subplots(1, len(perplexities), figsize=(20, 5))
-
-    for idx, perplexity in enumerate(perplexities):
-        # Run t-SNE with current perplexity
-        _, X_tsne, _ = implement_tsne(X, perplexity=perplexity, n_iter=500)
-
-        # Plot results
-        unique_labels = np.unique(y)
-        colors = plt.cm.tab10(np.linspace(0, 1, len(unique_labels)))
-
-        for label in unique_labels:
-            mask = y == label
-            axes[idx].scatter(X_tsne[mask, 0], X_tsne[mask, 1],
-                             c=[colors[label]], alpha=0.6, s=30, edgecolors='black')
-
-        axes[idx].set_title(f'Perplexity = {perplexity}', fontsize=12)
-        axes[idx].set_xlabel('t-SNE Component 1')
-        axes[idx].set_ylabel('t-SNE Component 2')
-        axes[idx].grid(True, alpha=0.3)
-
-    plt.tight_layout()
-    plt.show()
-
-def compare_learning_rates(X, y, target_names, learning_rates=[10, 100, 500, 1000]):
-    """
-    Compare t-SNE results with different learning rates.
-
-    Parameters:
-        X: Feature matrix
-        y: Target labels
-        target_names: Names of target classes
-        learning_rates: List of learning rates to test
-    """
-    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-    axes = axes.ravel()
-
-    for idx, lr in enumerate(learning_rates):
-        # Run t-SNE with current learning rate
-        _, X_tsne, _ = implement_tsne(X, learning_rate=lr, n_iter=500)
-
-        # Plot results
-        unique_labels = np.unique(y)
-        colors = plt.cm.tab10(np.linspace(0, 1, len(unique_labels)))
-
-        for label in unique_labels:
-            mask = y == label
-            axes[idx].scatter(X_tsne[mask, 0], X_tsne[mask, 1],
-                             c=[colors[label]], alpha=0.6, s=30, edgecolors='black')
-
-        axes[idx].set_title(f'Learning Rate = {lr}', fontsize=12)
-        axes[idx].set_xlabel('t-SNE Component 1')
-        axes[idx].set_ylabel('t-SNE Component 2')
-        axes[idx].grid(True, alpha=0.3)
-
     plt.tight_layout()
     plt.show()
 
@@ -222,38 +114,12 @@ def main():
     """
     Main function to demonstrate t-SNE.
     """
-    print("=" * 60)
+    print("=" * 70)
     print("T-DISTRIBUTED STOCHASTIC NEIGHBOR EMBEDDING (t-SNE)")
-    print("=" * 60)
+    print("=" * 70)
 
-    # Example 1: Iris dataset
-    print("\n--- Example 1: Iris Dataset (4D → 2D) ---")
-    X_iris, y_iris, target_names_iris = load_iris_data()
-
-    print(f"\nDataset Information:")
-    print(f"  - Number of samples: {X_iris.shape[0]}")
-    print(f"  - Number of features: {X_iris.shape[1]}")
-    print(f"  - Number of classes: {len(target_names_iris)}")
-
-    # Standardize data
-    scaler = StandardScaler()
-    X_iris_scaled = scaler.fit_transform(X_iris)
-
-    # Implement t-SNE
-    print("\n1. Implementing t-SNE to reduce from 4D to 2D...")
-    tsne_iris, X_iris_tsne, time_iris = implement_tsne(X_iris_scaled, n_components=2)
-
-    print(f"   Original dimensions: {X_iris_scaled.shape[1]}")
-    print(f"   Reduced dimensions: {X_iris_tsne.shape[1]}")
-    print(f"   Computation time: {time_iris:.2f} seconds")
-
-    # Visualize t-SNE
-    print("\n2. Visualizing data in 2D...")
-    plot_tsne_scatter(X_iris_tsne, y_iris, target_names_iris,
-                     title="t-SNE: Iris Dataset (4D → 2D)")
-
-    # Example 2: Digits dataset
-    print("\n--- Example 2: Digits Dataset (64D → 2D) ---")
+    # Example: Digits dataset (64D -> 2D)
+    print("\n--- Digits Dataset (64D → 2D) ---")
     X_digits, y_digits, target_names_digits = load_digits_data()
 
     print(f"\nDataset Information:")
@@ -262,43 +128,29 @@ def main():
     print(f"  - Number of classes: {len(target_names_digits)}")
 
     # Standardize data
-    scaler_d = StandardScaler()
-    X_digits_scaled = scaler_d.fit_transform(X_digits)
+    scaler = StandardScaler()
+    X_digits_scaled = scaler.fit_transform(X_digits)
 
     # Implement t-SNE
     print("\n1. Implementing t-SNE to reduce from 64D to 2D...")
-    tsne_digits, X_digits_tsne, time_digits = implement_tsne(X_digits_scaled, n_components=2)
+    print(f"   Perplexity: 30 (controls local/global focus)")
+    print(f"   Learning Rate: 200 (optimization step size)")
+    print(f"   Iterations: 1000")
+
+    tsne_digits, X_digits_tsne = implement_tsne(X_digits_scaled, n_components=2)
 
     print(f"   Original dimensions: {X_digits_scaled.shape[1]}")
     print(f"   Reduced dimensions: {X_digits_tsne.shape[1]}")
-    print(f"   Computation time: {time_digits:.2f} seconds")
 
     # Visualize t-SNE
     print("\n2. Visualizing handwritten digits in 2D...")
-    plot_tsne_scatter(X_digits_tsne, y_digits, target_names_digits,
-                     title="t-SNE: Handwritten Digits (64D → 2D)")
-
-    # Example 3: Comparing perplexity values
-    print("\n--- Example 3: Effect of Perplexity ---")
-    print("\nComparing t-SNE results with different perplexity values...")
-    print("(Lower perplexity: More local structure)")
-    print("(Higher perplexity: More global structure)")
-
-    X_syn, y_syn = generate_synthetic_clusters()
-    X_syn_scaled = StandardScaler().fit_transform(X_syn)
-
-    compare_perplexities(X_syn_scaled, y_syn, [f'Cluster {i}' for i in range(5)])
-
-    # Example 4: Comparing learning rates
-    print("\n--- Example 4: Effect of Learning Rate ---")
-    print("\nComparing t-SNE results with different learning rates...")
-
-    compare_learning_rates(X_syn_scaled, y_syn, [f'Cluster {i}' for i in range(5)])
+    plot_tsne_visualization(X_digits_tsne, y_digits, target_names_digits,
+                          title="t-SNE: Handwritten Digits (64D → 2D)")
 
     # Advantages and Disadvantages
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 70)
     print("T-SNE: ADVANTAGES AND DISADVANTAGES")
-    print("=" * 60)
+    print("=" * 70)
     print("\nAdvantages:")
     print("  ✓ Excellent for visualizing high-dimensional data")
     print("  ✓ Preserves local structure well")
@@ -315,9 +167,9 @@ def main():
     print("  ✗ Doesn't preserve global structure well")
     print("  ✗ Not suitable for supervised learning (no transform method)")
 
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 70)
     print("KEY PARAMETERS")
-    print("=" * 60)
+    print("=" * 70)
     print("\nPerplexity:")
     print("  - Controls balance between local and global structure")
     print("  - Typical values: 5-50")
@@ -335,9 +187,9 @@ def main():
     print("  - Typical values: 500-2000")
     print("  - More iterations: Better convergence (slower)")
 
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 70)
     print("T-SNE vs PCA")
-    print("=" * 60)
+    print("=" * 70)
     print("\nSimilarities:")
     print("  - Both reduce dimensionality")
     print("  - Both used for visualization")
@@ -355,6 +207,10 @@ def main():
     print("\nWhen to use which:")
     print("  - Use PCA for: Speed, interpretability, large datasets")
     print("  - Use t-SNE for: Visualization, discovering clusters, complex data")
+
+    print("\n" + "=" * 70)
+    print("✅ COMPLETE! t-SNE demonstrated with Digits dataset.")
+    print("=" * 70)
 
 if __name__ == "__main__":
     main()

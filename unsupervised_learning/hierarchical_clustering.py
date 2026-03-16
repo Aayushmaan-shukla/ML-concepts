@@ -19,12 +19,12 @@ Agglomerative Clustering Steps:
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
+from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
 
-# Generate synthetic data for demonstration
 def generate_sample_data():
     """
     Generate sample data with 3 clusters for demonstration.
@@ -42,46 +42,18 @@ def generate_sample_data():
 
     return X_scaled, y
 
-def plot_dendrogram(X, linkage_method='ward'):
-    """
-    Plot a dendrogram showing the hierarchical clustering structure.
-    A dendrogram is a tree-like diagram that records the sequences of merges.
-
-    Parameters:
-        X: Feature matrix
-        linkage_method: Method to calculate distance between clusters
-            - 'ward': Minimizes variance of clusters being merged
-            - 'complete': Maximum distance between clusters
-            - 'average': Average distance between clusters
-            - 'single': Minimum distance between clusters
-    """
-    # Perform hierarchical clustering
-    # linkage() calculates the distance matrix and performs clustering
-    Z = linkage(X, method=linkage_method)
-
-    # Create figure for dendrogram
-    plt.figure(figsize=(12, 6))
-
-    # Plot dendrogram
-    dendrogram(Z, leaf_rotation=90, leaf_font_size=10, show_contracted=True)
-
-    plt.title(f'Hierarchical Clustering Dendrogram (Linkage: {linkage_method})',
-              fontsize=14)
-    plt.xlabel('Sample Index', fontsize=12)
-    plt.ylabel('Distance', fontsize=12)
-    plt.tight_layout()
-    plt.show()
-
-    return Z
-
-def implement_agglomerative_clustering(X, n_clusters=3, linkage_method='ward'):
+def implement_hierarchical_clustering(X, n_clusters=3, linkage_method='ward'):
     """
     Implement Agglomerative Hierarchical Clustering.
 
     Parameters:
         X: Feature matrix
         n_clusters: Number of clusters to form
-        linkage_method: Linkage method ('ward', 'complete', 'average', 'single')
+        linkage_method: Method to calculate distance between clusters
+            - 'ward': Minimizes variance of clusters being merged
+            - 'complete': Maximum distance between clusters
+            - 'average': Average distance between clusters
+            - 'single': Minimum distance between clusters
 
     Returns:
         clustering: Fitted AgglomerativeClustering model
@@ -96,72 +68,30 @@ def implement_agglomerative_clustering(X, n_clusters=3, linkage_method='ward'):
 
     return clustering, labels
 
-def visualize_clusters(X, labels, title="Hierarchical Clustering"):
+def plot_dendrogram(X, linkage_method='ward'):
     """
-    Visualize the clustered data.
+    Plot a dendrogram showing the hierarchical clustering structure.
+    A dendrogram is a tree-like diagram that records the sequences of merges.
 
     Parameters:
         X: Feature matrix
-        labels: Cluster labels
-        title: Plot title
+        linkage_method: Method to calculate distance between clusters
     """
-    plt.figure(figsize=(10, 6))
+    # Perform hierarchical clustering
+    # linkage() calculates the distance matrix and performs clustering
+    Z = linkage(X, method=linkage_method)
 
-    # Plot each cluster with a different color
-    unique_labels = np.unique(labels)
-    colors = ['red', 'blue', 'green', 'purple', 'orange']
+    # Create figure for dendrogram
+    plt.figure(figsize=(12, 6))
 
-    for i, label in enumerate(unique_labels):
-        if i < len(colors):
-            mask = labels == label
-            plt.scatter(X[mask, 0], X[mask, 1],
-                       c=colors[i], alpha=0.6,
-                       label=f'Cluster {i+1}')
+    # Plot dendrogram
+    dendrogram(Z, leaf_rotation=90, leaf_font_size=10, show_contracted=True)
 
-    plt.title(title, fontsize=14)
-    plt.xlabel('Feature 1 (Standardized)', fontsize=12)
-    plt.ylabel('Feature 2 (Standardized)', fontsize=12)
-    plt.legend()
+    plt.title(f'Hierarchical Clustering Dendrogram (Linkage: {linkage_method})',
+              fontsize=14, fontweight='bold')
+    plt.xlabel('Sample Index', fontsize=12)
+    plt.ylabel('Distance', fontsize=12)
     plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.show()
-
-def compare_linkage_methods(X):
-    """
-    Compare different linkage methods in hierarchical clustering.
-
-    Parameters:
-        X: Feature matrix
-    """
-    linkage_methods = ['ward', 'complete', 'average', 'single']
-    n_clusters = 3
-
-    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-    axes = axes.ravel()
-
-    for idx, method in enumerate(linkage_methods):
-        # Perform clustering with current linkage method
-        clustering = AgglomerativeClustering(n_clusters=n_clusters,
-                                            linkage=method)
-        labels = clustering.fit_predict(X)
-
-        # Visualize clusters
-        unique_labels = np.unique(labels)
-        colors = ['red', 'blue', 'green', 'purple', 'orange']
-
-        for i, label in enumerate(unique_labels):
-            if i < len(colors):
-                mask = labels == label
-                axes[idx].scatter(X[mask, 0], X[mask, 1],
-                                 c=colors[i], alpha=0.6,
-                                 label=f'Cluster {i+1}')
-
-        axes[idx].set_title(f'Linkage: {method.capitalize()}', fontsize=12)
-        axes[idx].set_xlabel('Feature 1')
-        axes[idx].set_ylabel('Feature 2')
-        axes[idx].legend()
-        axes[idx].grid(True, alpha=0.3)
-
     plt.tight_layout()
     plt.show()
 
@@ -169,13 +99,14 @@ def main():
     """
     Main function to demonstrate Hierarchical Clustering.
     """
-    print("=" * 60)
+    print("=" * 70)
     print("HIERARCHICAL CLUSTERING IMPLEMENTATION")
-    print("=" * 60)
+    print("=" * 70)
 
     # Generate sample data
     print("\n1. Generating sample data with 3 clusters...")
-    X, true_labels = generate_sample_data()
+    X, y = generate_sample_data()
+
     print(f"   Data shape: {X.shape}")
     print(f"   Number of samples: {X.shape[0]}")
     print(f"   Number of features: {X.shape[1]}")
@@ -183,13 +114,12 @@ def main():
     # Plot dendrogram
     print("\n2. Plotting dendrogram to visualize cluster hierarchy...")
     print("   (The dendrogram shows how clusters are merged)")
-    Z = plot_dendrogram(X, linkage_method='ward')
+    plot_dendrogram(X, linkage_method='ward')
 
     # Implement Agglomerative Clustering
     print("\n3. Implementing Agglomerative Clustering with 3 clusters...")
-    clustering, cluster_labels = implement_agglomerative_clustering(X,
-                                                                    n_clusters=3,
-                                                                    linkage_method='ward')
+    clustering, cluster_labels = implement_hierarchical_clustering(
+        X, n_clusters=3, linkage_method='ward')
 
     # Count points in each cluster
     unique, counts = np.unique(cluster_labels, return_counts=True)
@@ -197,18 +127,15 @@ def main():
     for label, count in zip(unique, counts):
         print(f"   - Cluster {label + 1}: {count} points")
 
-    # Visualize the results
-    print("\n4. Visualizing the clusters...")
-    visualize_clusters(X, cluster_labels, title="Hierarchical Clustering (Ward Linkage)")
-
-    # Compare different linkage methods
-    print("\n5. Comparing different linkage methods...")
-    compare_linkage_methods(X)
+    # Calculate silhouette score
+    silhouette = silhouette_score(X, cluster_labels)
+    print(f"   Silhouette score: {silhouette:.4f}")
+    print(f"   (Range: -1 to 1, higher is better)")
 
     # Advantages and Disadvantages
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 70)
     print("HIERARCHICAL CLUSTERING: ADVANTAGES AND DISADVANTAGES")
-    print("=" * 60)
+    print("=" * 70)
     print("\nAdvantages:")
     print("  ✓ No need to specify number of clusters in advance")
     print("  ✓ Dendrogram provides visual representation of clustering")
@@ -221,20 +148,29 @@ def main():
     print("  ✗ Sensitive to noise and outliers")
     print("  ✗ May produce different results with different distance metrics")
 
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 70)
     print("LINKAGE METHODS:")
-    print("=" * 60)
+    print("=" * 70)
     print("  - Ward: Minimizes variance (good for compact clusters)")
     print("  - Complete: Maximum distance between clusters")
     print("  - Average: Average distance between clusters")
     print("  - Single: Minimum distance between clusters (sensitive to noise)")
 
-    print("\n" + "=" * 60)
-    print("DISTANCE METRICS:")
-    print("=" * 60)
-    print("  - Euclidean: Standard straight-line distance")
-    print("  - Manhattan: City block distance")
-    print("  - Cosine: Measures angle between vectors")
+    print("\n" + "=" * 70)
+    print("KEY CONCEPTS:")
+    print("=" * 70)
+    print("\nAgglomerative Clustering:")
+    print("  - Bottom-up approach")
+    print("  - Starts with each point as its own cluster")
+    print("  - Iteratively merges most similar clusters")
+    print("\nDendrogram:")
+    print("  - Tree structure showing how clusters merge")
+    print("  - Height shows distance between merged clusters")
+    print("  - Cut at different heights for different K values")
+
+    print("\n" + "=" * 70)
+    print("✅ COMPLETE! Hierarchical Clustering demonstrated.")
+    print("=" * 70)
 
 if __name__ == "__main__":
     main()
