@@ -94,7 +94,8 @@ def plot_decision_boundary(svm, X, y):
     # Plot decision boundary
     plt.contourf(xx, yy, Z, alpha=0.3, colors=['gray', 'gray'])
 
-    plt.title(f'SVM Decision Boundary ({kernel} kernel)', fontsize=14, fontweight='bold')
+    #plt.title(f'SVM Decision Boundary ({kernel} kernel)', fontsize=14, fontweight='bold')
+    plt.title('SVM Decision Boundary (RBF kernel)', fontsize=14, fontweight='bold')
     plt.xlabel('Feature 1 (Standardized)', fontsize=12)
     plt.ylabel('Feature 2 (Standardized)', fontsize=12)
     plt.legend(fontsize=11, loc='best')
