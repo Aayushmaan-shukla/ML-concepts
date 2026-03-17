@@ -99,9 +99,14 @@ def main():
     print(f"   - Number of features: {X.shape[1]}")
     print(f"   - Number of classes: {len(target_names)}")
     print(f"   - Classes: {target_names}")
+    print(f"   - Using only 2 features for 2D visualization")
+
+    # Use only first 2 features for 2D visualization
+    print("\n2. Using first 2 features for 2D visualization...")
+    X = X[:, :2]  # Keep only sepal length and sepal width
 
     # Split and scale data
-    print("\n2. Splitting data into train and test sets...")
+    print("\n3. Splitting data into train and test sets...")
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=42)
 
@@ -113,14 +118,14 @@ def main():
     print(f"   Test samples: {X_test_scaled.shape[0]}")
 
     # Implement Naive Bayes
-    print("\n3. Implementing Naive Bayes (Gaussian)...")
+    print("\n4. Implementing Naive Bayes (Gaussian)...")
     nb, y_pred = implement_naive_bayes(X_train_scaled, X_test_scaled, y_train)
 
     accuracy = accuracy_score(y_test, y_pred)
     print(f"   Accuracy: {accuracy:.4f}")
 
     # Visualize predictions
-    print("\n4. Visualizing predictions...")
+    print("\n5. Visualizing predictions...")
     print("   (Data points colored by their true class)")
     plot_predictions(X_test_scaled, y_test, y_pred, target_names)
 

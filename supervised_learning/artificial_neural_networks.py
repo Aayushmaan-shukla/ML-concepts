@@ -15,14 +15,14 @@ Key Concepts:
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPClassifier
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, classification_report
 
-def load_cancer_data():
-    """Load Breast Cancer dataset for demonstration."""
-    data = load_breast_cancer()
+def load_iris_data():
+    """Load Iris dataset for demonstration."""
+    data = load_iris()
     X = data.data
     y = data.target
     feature_names = data.feature_names
@@ -87,8 +87,8 @@ def main():
     print("=" * 70)
 
     # Load dataset
-    print("\n1. Loading Breast Cancer dataset...")
-    X, y, target_names = load_cancer_data()
+    print("\n1. Loading Iris dataset...")
+    X, y, target_names = load_iris_data()
 
     print(f"\n   Dataset Information:")
     print(f"   - Number of samples: {X.shape[0]}")
@@ -110,7 +110,7 @@ def main():
 
     # Implement MLP
     print("\n3. Implementing Neural Network...")
-    print(f"   Architecture: Input ({X_train_scaled.shape[1]}) → Hidden (100, 50) → Output (1)")
+    print(f"   Architecture: Input ({X_train_scaled.shape[1]}) → Hidden (100, 50) → Output (3)")
     mlp, y_pred = implement_mlp(X_train_scaled, X_test_scaled, y_train, hidden_layers=(100, 50))
 
     accuracy = accuracy_score(y_test, y_pred)
@@ -176,7 +176,7 @@ def main():
     print("  4. Repeat until convergence")
 
     print("\n" + "=" * 70)
-    print("✅ COMPLETE! Neural Network demonstrated with Breast Cancer dataset.")
+    print("✅ COMPLETE! Neural Network demonstrated with Iris dataset.")
     print("=" * 70)
 
 if __name__ == "__main__":

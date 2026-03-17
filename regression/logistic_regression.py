@@ -145,7 +145,7 @@ def main():
 
     accuracy = accuracy_score(y_test, y_pred)
     print(f"   Accuracy: {accuracy:.4f}")
-    print(f"   Coefficient (Intercept): {model.intercept_:.4f}")
+    print(f"   Coefficient (Intercept): {model.intercept_[0]:.4f}")
 
     # Visualize sigmoid function
     print("\n4. Visualizing Sigmoid function...")
